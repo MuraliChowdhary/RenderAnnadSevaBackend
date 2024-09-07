@@ -13,7 +13,7 @@ const sendOtp = async ({ email }) => {
     await Otp.deleteOne({ email });
 
     const generatedOtp = await generateOtp();
-
+    console.log(generateOtp)
     const mailOptions = {
       from: AUTH_EMAIL,
       to: email,
@@ -46,29 +46,34 @@ const verifyOTP = async ({ email, otp }) => {
     }
 
     const matchedOTPRecord = await Otp.findOne({ email });
-    // console.log(matchedOTPRecord)
+    //console.log("Matched OTP Record:", matchedOTPRecord);
+
     if (!matchedOTPRecord) {
       throw Error("No OTP record found");
     }
 
     const { expiresAt, otp: hashedOtp } = matchedOTPRecord;
+    console.log("Stored Hashed OTP:", hashedOtp);
+    console.log("User's Provided OTP:", otp);
 
     if (expiresAt < Date.now()) {
       throw Error("OTP expired");
     }
 
     const validOTP = await verifyHashedData(otp, hashedOtp);
-  //  console.log(validOTP)
+    console.log("Is OTP Valid:", validOTP);
+
     if (!validOTP) {
       throw Error("Invalid OTP");
     }
 
     return validOTP;
   } catch (error) {
-    console.error(error); // Log the error details
+    console.error("OTP Verification Error:", error); // Log the error details
     throw new Error("Verification unsuccessful");
   }
 };
+
 
 const deleteOtp = async (req, res) => {
   try {
